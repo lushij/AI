@@ -1,0 +1,440 @@
+import fitz  # PyMuPDF
+import pytesseract
+from PIL import Image, ImageEnhance
+import io
+import os
+import re
+
+class PDFDebugger:
+    def __init__(self):
+        """PDF调试器"""
+        # 设置Tesseract路径
+        tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        if os.path.exists(tesseract_path):
+            pytesseract.pytesseract.tesseract_cmd = tesseract_path
+            print(f"✓ Tesseract路径: {tesseract_path}")
+        else:
+            print("❌ Tesseract未找到")
+
+        # 创建输出目录
+        os.makedirs("debug_output", exist_ok=True)
+        os.makedirs("debug_output/images", exist_ok=True)
+        os.makedirs("debug_output/text", exist_ok=True)
+
+    def debug_pdf_images(self, pdf_path):
+        """
+        调试PDF中的图像
+        """
+        print(f"\n🔍 调试PDF图像: {os.path.basename(pdf_path)}")
+
+        doc = fitz.open(pdf_path)
+        total_images = 0
+
+        # 保存所有OCR结果
+        all_ocr_results = []
+
+        for page_num in range(len(doc)):
+            print(f"\n📖 第 {page_num + 1} 页")
+            page = doc[page_num]
+
+            # 获取图像
+            image_list = page.get_images()
+
+            if image_list:
+                print(f"  发现 {len(image_list)} 个图像")
+
+                for img_idx, img_info in enumerate(image_list):
+                    total_images += 1
+
+                    try:
+                        # 提取图像
+                        xref = img_info[0]
+                        base_image = doc.extract_image(xref)
+                        image_bytes = base_image["image"]
+
+                        # 获取图像尺寸信息
+                        width = img_info[2] if len(img_info) > 2 else 0
+                        height = img_info[3] if len(img_info) > 3 else 0
+
+                        print(f"\n    图像 {img_idx + 1}:")
+                        print(f"      尺寸: {width} x {height}")
+                        print(f"      格式: {base_image.get('ext', 'unknown')}")
+                        print(f"      颜色空间: {base_image.get('colorspace', 'unknown')}")
+
+                        # 转换为PIL图像
+                        image = Image.open(io.BytesIO(image_bytes))
+
+                        # 保存原始图像
+                        orig_path = f"debug_output/images/page_{page_num+1}_img_{img_idx+1}_orig.png"
+                        image.save(orig_path)
+
+                        # 尝试不同的图像处理方式
+                        ocr_results = self._test_multiple_ocr_methods(image, page_num, img_idx)
+
+                        if ocr_results:
+                            all_ocr_results.extend(ocr_results)
+
+                            # 保存最佳结果
+                            best_result = max(ocr_results, key=lambda x: x.get('score', 0))
+                            print(f"      最佳OCR: {best_result.get('text', '')[:50]}...")
+                            print(f"      置信度: {best_result.get('score', 0)}")
+
+                            # 保存处理后的图像
+                            if 'image' in best_result:
+                                proc_path = f"debug_output/images/page_{page_num+1}_img_{img_idx+1}_proc.png"
+                                best_result['image'].save(proc_path)
+
+                    except Exception as e:
+                        print(f"    图像 {img_idx + 1} 处理失败: {e}")
+
+            else:
+                print(f"  本页无图像")
+
+        doc.close()
+
+        # 保存所有OCR结果
+        self._save_ocr_results(all_ocr_results)
+
+        print(f"\n📊 调试完成:")
+        print(f"  总图像数: {total_images}")
+        print(f"  总OCR结果: {len(all_ocr_results)}")
+
+        # 分析OCR结果
+        self._analyze_ocr_results(all_ocr_results)
+
+        return all_ocr_results
+
+    def _test_multiple_ocr_methods(self, image, page_num, img_idx):
+        """
+        尝试多种OCR方法
+        """
+        results = []
+
+        # 方法1: 原始图像
+        text1 = self._ocr_image(image, 'chi_sim', '--psm 6')
+        if text1:
+            results.append({
+                'method': '原始图像',
+                'text': text1,
+                'page': page_num + 1,
+                'image': img_idx + 1,
+                'score': len(text1.strip())
+            })
+
+        # 方法2: 灰度图像
+        gray = image.convert('L')
+        text2 = self._ocr_image(gray, 'chi_sim', '--psm 6')
+        if text2 and text2 != text1:
+            results.append({
+                'method': '灰度图像',
+                'text': text2,
+                'page': page_num + 1,
+                'image': img_idx + 1,
+                'score': len(text2.strip()),
+                'image': gray
+            })
+
+        # 方法3: 增强对比度
+        enhancer = ImageEnhance.Contrast(gray)
+        enhanced = enhancer.enhance(2.0)
+        text3 = self._ocr_image(enhanced, 'chi_sim', '--psm 6')
+        if text3 and text3 not in [text1, text2]:
+            results.append({
+                'method': '增强对比度',
+                'text': text3,
+                'page': page_num + 1,
+                'image': img_idx + 1,
+                'score': len(text3.strip()),
+                'image': enhanced
+            })
+
+        # 方法4: 调整大小（如果图像太小）
+        if image.width < 100 or image.height < 100:
+            scaled = image.resize((image.width * 2, image.height * 2), Image.Resampling.LANCZOS)
+            text4 = self._ocr_image(scaled, 'chi_sim', '--psm 6')
+            if text4 and text4 not in [text1, text2, text3]:
+                results.append({
+                    'method': '放大图像',
+                    'text': text4,
+                    'page': page_num + 1,
+                    'image': img_idx + 1,
+                    'score': len(text4.strip()),
+                    'image': scaled
+                })
+
+        # 方法5: 英文OCR
+        text5 = self._ocr_image(enhanced, 'eng', '--psm 6')
+        if text5 and text5 not in [text1, text2, text3, text4]:
+            results.append({
+                'method': '英文OCR',
+                'text': text5,
+                'page': page_num + 1,
+                'image': img_idx + 1,
+                'score': len(text5.strip()),
+                'image': enhanced
+            })
+
+        # 方法6: 中英文混合
+        text6 = self._ocr_image(enhanced, 'chi_sim+eng', '--psm 6')
+        if text6 and text6 not in [text1, text2, text3, text4, text5]:
+            results.append({
+                'method': '中英文混合',
+                'text': text6,
+                'page': page_num + 1,
+                'image': img_idx + 1,
+                'score': len(text6.strip()),
+                'image': enhanced
+            })
+
+        return results
+
+    def _ocr_image(self, image, lang, config):
+        """
+        OCR识别
+        """
+        try:
+            text = pytesseract.image_to_string(image, lang=lang, config=config)
+            return text.strip()
+        except:
+            return ""
+
+    def _save_ocr_results(self, results):
+        """
+        保存OCR结果
+        """
+        # 按页面分组保存
+        by_page = {}
+        for result in results:
+            page = result['page']
+            if page not in by_page:
+                by_page[page] = []
+            by_page[page].append(result)
+
+        # 保存每个页面的结果
+        for page, page_results in by_page.items():
+            with open(f"debug_output/text/page_{page}_ocr.txt", "w", encoding="utf-8") as f:
+                f.write(f"=== 第 {page} 页 OCR 结果 ===\n\n")
+
+                # 按图像分组
+                by_image = {}
+                for result in page_results:
+                    img = result['image']
+                    if img not in by_image:
+                        by_image[img] = []
+                    by_image[img].append(result)
+
+                for img in sorted(by_image.keys()):
+                    f.write(f"图像 {img}:\n")
+                    f.write("-" * 40 + "\n")
+
+                    for result in by_image[img]:
+                        f.write(f"方法: {result['method']}\n")
+                        f.write(f"得分: {result['score']}\n")
+                        f.write(f"文本: {result['text']}\n")
+                        f.write("-" * 20 + "\n")
+
+                    f.write("\n")
+
+        # 保存汇总
+        with open("debug_output/text/all_ocr_summary.txt", "w", encoding="utf-8") as f:
+            f.write("=== 所有OCR结果汇总 ===\n\n")
+
+            for result in sorted(results, key=lambda x: (x['page'], x['image'], -x['score'])):
+                f.write(f"第{result['page']}页-图像{result['image']}: ")
+                f.write(f"[{result['method']}] ")
+                f.write(f"({result['score']}字符) ")
+                f.write(f"{result['text'][:100]}\n")
+
+    def _analyze_ocr_results(self, results):
+        """
+        分析OCR结果
+        """
+        print(f"\n📊 OCR结果分析:")
+
+        if not results:
+            print("  没有OCR结果")
+            return
+
+        # 统计
+        total_chars = sum(len(r['text']) for r in results)
+        avg_chars = total_chars / len(results) if results else 0
+
+        print(f"  平均每个结果字符数: {avg_chars:.1f}")
+
+        # 查找最长的结果
+        longest = max(results, key=lambda x: len(x['text'])) if results else None
+        if longest:
+            print(f"  最长结果: {len(longest['text'])} 字符")
+            print(f"    来自: 第{longest['page']}页-图像{longest['image']}")
+            print(f"    方法: {longest['method']}")
+            print(f"    内容: {longest['text'][:100]}...")
+
+        # 检查是否包含元器件关键词
+        keywords = ['液晶', '屏幕', '传感器', '开关', '连接器', 'ECU', '电机', '灯', '仪表', '线束']
+
+        print(f"\n🔍 关键词检查:")
+        found_keywords = {}
+
+        for result in results:
+            text = result['text']
+            for keyword in keywords:
+                if keyword in text:
+                    if keyword not in found_keywords:
+                        found_keywords[keyword] = []
+                    found_keywords[keyword].append(result)
+
+        if found_keywords:
+            for keyword, matches in found_keywords.items():
+                print(f"  ✓ 找到 '{keyword}': {len(matches)} 次")
+                for match in matches[:2]:  # 显示前2个
+                    print(f"    第{match['page']}页-图像{match['image']}: {match['text'][:50]}...")
+        else:
+            print(f"  ⚠️ 未找到任何元器件关键词")
+
+            # 显示一些实际识别的内容
+            print(f"\n📝 实际识别的内容示例:")
+            sample_results = sorted(results, key=lambda x: len(x['text']), reverse=True)[:5]
+            for i, result in enumerate(sample_results, 1):
+                if result['text']:
+                    print(f"  {i}. 第{result['page']}页-图像{result['image']}: {result['text'][:50]}")
+
+    def extract_pdf_metadata(self, pdf_path):
+        """
+        提取PDF元数据
+        """
+        print(f"\n📄 提取PDF元数据: {os.path.basename(pdf_path)}")
+
+        doc = fitz.open(pdf_path)
+
+        # 基本元数据
+        metadata = doc.metadata
+        print(f"  标题: {metadata.get('title', '无')}")
+        print(f"  作者: {metadata.get('author', '无')}")
+        print(f"  主题: {metadata.get('subject', '无')}")
+        print(f"  关键词: {metadata.get('keywords', '无')}")
+        print(f"  创建者: {metadata.get('creator', '无')}")
+        print(f"  创建时间: {metadata.get('creationDate', '无')}")
+
+        # 页面信息
+        print(f"\n📊 页面详细信息:")
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+
+            # 获取页面文本（如果有）
+            text = page.get_text()
+            text_length = len(text.strip())
+
+            # 获取图像
+            images = page.get_images()
+
+            # 获取矢量图形
+            drawings = page.get_drawings()
+
+            print(f"\n  第 {page_num + 1} 页:")
+            print(f"    文本长度: {text_length} 字符")
+            print(f"    图像数量: {len(images)}")
+            print(f"    矢量图形: {len(drawings)}")
+
+            # 如果有文本，显示片段
+            if text_length > 0:
+                print(f"    文本预览: {text.strip()[:100]}...")
+
+            # 图像详细信息
+            if images:
+                print(f"    图像详情:")
+                for i, img in enumerate(images[:3]):  # 只显示前3个
+                    print(f"      图像{i+1}: {img[2]}x{img[3]}")
+
+        doc.close()
+
+        # 保存元数据
+        with open("debug_output/pdf_metadata.txt", "w", encoding="utf-8") as f:
+            f.write("=== PDF元数据 ===\n\n")
+            for key, value in metadata.items():
+                f.write(f"{key}: {value}\n")
+
+        print(f"\n✅ 元数据已保存到: debug_output/pdf_metadata.txt")
+
+
+def main():
+    """
+    主程序 - PDF调试器
+    """
+    print("=" * 80)
+    print("🔬 PDF调试与分析工具")
+    print("=" * 80)
+    print("说明: 分析PDF结构，调试OCR识别问题")
+    print("=" * 80)
+
+    # 检查依赖
+    try:
+        import fitz
+        import pytesseract
+        from PIL import Image
+        print("✓ 所有依赖库已安装")
+    except ImportError as e:
+        print(f"❌ 缺少依赖库: {e}")
+        print("\n请安装: pip install PyMuPDF pytesseract pillow")
+        return
+
+    # PDF文件
+    pdf_path = "test.pdf"
+    if not os.path.exists(pdf_path):
+        print(f"❌ 文件不存在: {pdf_path}")
+        print("当前目录:", os.listdir('.'))
+        return
+
+    print(f"✓ 分析文件: {pdf_path}")
+
+    # 创建调试器
+    debugger = PDFDebugger()
+
+    print(f"\n选择调试模式:")
+    print("1. 完整调试（图像OCR + 元数据）")
+    print("2. 只调试图像OCR")
+    print("3. 只提取元数据")
+
+    choice = input("\n请选择 (1/2/3, 默认1): ").strip() or "1"
+
+    if choice in ["1", "2"]:
+        print(f"\n{'='*80}")
+        print("开始调试图像OCR...")
+        print("=" * 80)
+
+        # 调试图像OCR
+        results = debugger.debug_pdf_images(pdf_path)
+
+        if not results:
+            print("\n⚠️ 警告: 没有OCR结果或图像无法识别")
+            print("可能原因:")
+            print("  1. PDF中的'图像'实际上是矢量图形")
+            print("  2. 图像质量太差")
+            print("  3. 图像太小")
+            print("  4. 图像是图标或符号，不是文字")
+
+    if choice in ["1", "3"]:
+        print(f"\n{'='*80}")
+        print("提取PDF元数据...")
+        print("=" * 80)
+
+        # 提取元数据
+        debugger.extract_pdf_metadata(pdf_path)
+
+    print(f"\n{'='*80}")
+    print("调试完成!")
+    print("=" * 80)
+    print("\n生成的文件:")
+    print("  debug_output/images/ - 原始和处理后的图像")
+    print("  debug_output/text/ - OCR识别结果")
+    print("  debug_output/pdf_metadata.txt - PDF元数据")
+
+    # 提供建议
+    print(f"\n💡 基于分析的建议:")
+    print("  1. 查看 debug_output/text/ 中的OCR结果")
+    print("  2. 如果OCR结果太短，可能是图像质量问题")
+    print("  3. 考虑使用矢量图形提取而非OCR")
+    print("  4. 或者PDF本身就是矢量图，需要不同方法")
+
+
+if __name__ == "__main__":
+    main()

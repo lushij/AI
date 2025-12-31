@@ -1,0 +1,27 @@
+{
+  "statistics": {
+    "total_pages": 13,
+    "images_processed": 14,
+    "components_found": 0,
+    "pages_with_images": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  "components": [],
+  "metadata": {
+    "export_time": "2024-01-01",
+    "component_count": 0
+  }
+}
