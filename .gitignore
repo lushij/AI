@@ -1,0 +1,335 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# ============================================
+# .gitignore for AI/ML Projects
+# 针对 AI/机器学习项目的完整忽略规则
+# ============================================
+
+# === 操作系统文件 ===
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# === IDE/编辑器 ===
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# PyCharm
+.idea/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/shelf/
+*.iws
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+sftp-config.json
+
+# Vim
+*.swp
+*.swo
+*~
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+Session.vim
+.netrwhist
+
+# === Python ===
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# === 数据文件和大文件 ===
+# 中文目录（你的项目）
+机器学习/data/
+机器学习/数据集/
+机器学习/模型/
+机器学习/结果/
+
+# 英文目录
+data/
+datasets/
+raw_data/
+processed_data/
+external_data/
+models/
+checkpoints/
+weights/
+saved_models/
+experiments/
+results/
+outputs/
+logs/
+
+# CSV 文件
+*.csv
+
+# Excel 文件
+*.xlsx
+*.xls
+*.xlsm
+
+# 数据序列化
+*.parquet
+*.feather
+*.orc
+*.avro
+
+# HDF5
+*.h5
+*.hdf5
+*.he5
+
+# NumPy
+*.npy
+*.npz
+
+# Pickle
+*.pkl
+*.pickle
+*.joblib
+
+# 机器学习模型
+*.pth
+*.pt
+*.safetensors
+*.bin
+*.onnx
+*.ckpt
+*.index
+*.meta
+*.data-*
+*.model
+*.weights
+
+# TensorFlow
+*.pb
+*.tflite
+*.tflitemodel
+saved_model/
+checkpoint
+
+# PyTorch
+*.pth
+*.pt
+*.bin
+lightning_logs/
+
+# 其他框架
+*.mlmodel
+*.pmml
+*.h2o
+
+# === 压缩文件 ===
+*.zip
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.gz
+*.bz2
+
+# === 日志文件 ===
+*.log
+logs/
+*.log.*
+log/
+*.journal
+*.etl
+
+# === Jupyter Notebook ===
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# === 测试和覆盖率 ===
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# === 文档 ===
+docs/_build/
+_build/
+
+# === 环境变量 ===
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# === 临时文件 ===
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# === 备份文件 ===
+*.bak
+*.backup
+*.old
+*.orig
+*_backup
+backup/
+
+# === 多媒体文件 ===
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.mp3
+*.wav
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+
+# === 大型配置文件 ===
+*.large
+*.huge
+*.massive
+
+# === Git LFS 指针文件 ===
+*.gitattributes
+.gitattributes
+
+# === 特定项目目录 ===
+# AI_Search 相关
+AI_Search/core/models/
+AI_Search/data/
+
+# === 构建产物 ===
+dist/
+build/
+out/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# === 包管理器 ===
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === 其他 ===
+# 密码和密钥
+secret.txt
+*.key
+*.pem
+*.crt
+*.cer
+
+# 项目特定
+instance/
+.webassets-cache
+.scrapy
+
+# === 自定义规则 ===
+# 在此处添加项目特定的忽略规则
+# 示例:
+# my_custom_data/
+# *.myformat
+
+# ============================================
+# 注意：已经跟踪的文件需要手动从Git中移除
+# 命令：git rm --cached <file>
+# ============================================
