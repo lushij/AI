@@ -5,6 +5,10 @@ import os
 
 class BPE_Tokenizer:
     def __init__(self, vocab_size=1000):
+        """
+
+        :param vocab_size:  词表大小
+        """
         self.vocab_size = vocab_size
         # 初始词表：0-255 的 ASCII值
         self.vocab = {i: bytes([i]) for i in range(256)}
@@ -278,3 +282,9 @@ if __name__ == "__main__":
     new_tok = BPE_Tokenizer()
     new_tok.load("shakespeare_tokenizer.json")
     print(f"\n加载后特殊Token检查: {new_tok.special_tokens}")
+    input_text = "Hello world!<|endoftext|>This is padding:<|padding|>"
+
+    print("\n--- 编码测试 ---")
+    ids = new_tok.encode(input_text)
+    print(f"原文: {input_text}")
+    print(f"编码 IDs: {ids}")
