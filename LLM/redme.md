@@ -26,15 +26,15 @@
 
 ## 模型架构
 
-![image-20260130110810606](C:\Users\lushiji\AppData\Roaming\Typora\typora-user-images\image-20260130110810606.png)
+![image-20260130110810606](\image_md\image-20260130110810606.png)
 
 ## 先看模型训练结果---预训练阶段
 
-![image-20260130105912352](C:\Users\lushiji\AppData\Roaming\Typora\typora-user-images\image-20260130105912352.png)
+![image-20260130105912352](\image_md\image-20260130105912352.png)
 
 ## 再看模型微调阶段
 
-![image-20260130110503753](C:\Users\lushiji\AppData\Roaming\Typora\typora-user-images\image-20260130110503753.png)
+![image-20260130110503753](\image_md\image-20260130110503753.png)
 
 
 
@@ -205,4 +205,4 @@ process_file(INPUT_FILE, OUTPUT_FILE)
 
 ## 训练结果
 
-![image-20260130110657565](C:\Users\lushiji\AppData\Roaming\Typora\typora-user-images\image-20260130110657565.png)
+![image-20260130110657565](\image_md\image-20260130110657565.png)
