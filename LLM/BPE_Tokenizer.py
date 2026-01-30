@@ -1,3 +1,10 @@
+"""
+    Created by PyCharm
+    User:lushiji
+    Date:2026/1/25
+    Time:上午9：00
+    To change this template use File | Settings | File Templates
+"""
 import collections
 import regex
 import json
@@ -268,23 +275,77 @@ def test_shakespeare_tokenizer():
 
         # 2. 训练分词器
         # 莎士比亚集比较小，vocab_size 设置为 3000 到 5000 就足够覆盖大部分词了
-        tokenizer = BPE_Tokenizer(vocab_size=5000)
+        tokenizer = BPE_Tokenizer(vocab_size=510)
         tokenizer.train(text)
 
         # 3. 保存
         tokenizer.save("shakespeare_tokenizer")
 
 
+# --- 中文分词器训练脚本 ---
 
+JSON_FILE = r"alpaca_zh_51k\alpaca_data_51k.json"
+TARGET_VOCAB_SIZE = 6400
+MAX_CHARS = 500000  # 只取前 50万 字符训练，极大加速 ★★★
+
+
+def train_tokenizer():
+    # --- 1. 读取数据 ---
+    print(f"正在读取 {JSON_FILE} ...")
+
+    if not os.path.exists(JSON_FILE):
+        print(f"❌ 错误：找不到文件 {JSON_FILE}")
+        print(f"当前工作目录是: {os.getcwd()}")
+        return
+
+    all_text = ""
+    try:
+        with open(JSON_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        print(f"成功加载 JSON，共 {len(data)} 条数据")
+
+        # 提取文本
+        for item in data:
+            txt = item['instruction'] + item.get('input', '') + item['output']
+            all_text += txt + "\n"
+
+            # ★★★ 关键修改：一旦超过限制，立刻停止读取 ★★★
+            if len(all_text) > MAX_CHARS:
+                print(f"⚠️ 为了加速，已截取前 {len(all_text)} 个字符进行训练 (足够覆盖常用词了)")
+                break
+
+    except Exception as e:
+        print(f"❌ 读取数据出错: {e}")
+        return
+
+    print(f"数据读取完毕，准备训练字符数: {len(all_text)}")
+    print("🚀 开始训练 BPE 分词器 (预计 1-3 分钟)...")
+
+    # --- 2. 训练 ---
+    tokenizer = BPE_Tokenizer(vocab_size=TARGET_VOCAB_SIZE)
+    tokenizer.train(all_text)
+
+    # --- 3. 添加特殊 Token ---
+    special_tokens = ["<|user|>", "<|assistant|>", "<|end|>"]
+    tokenizer.register_special_tokens(special_tokens)
+    print(f"特殊 Token 已注册: {special_tokens}")
+
+    # --- 4. 保存 ---
+    save_name = "chinese_tokenizer"
+    tokenizer.save(save_name)
+
+    print(f"✅ 中文分词器已保存为 {save_name}.json！最终词表大小: {len(tokenizer.vocab)}")
 # --- 完整流程测试 ---
 if __name__ == "__main__":
     # test_shakespeare_tokenizer()
-    new_tok = BPE_Tokenizer()
-    new_tok.load("shakespeare_tokenizer.json")
-    print(f"\n加载后特殊Token检查: {new_tok.special_tokens}")
-    input_text = "Hello world!<|endoftext|>This is padding:<|padding|>"
-
-    print("\n--- 编码测试 ---")
-    ids = new_tok.encode(input_text)
-    print(f"原文: {input_text}")
-    print(f"编码 IDs: {ids}")
+    # new_tok = BPE_Tokenizer()
+    # new_tok.load("shakespeare_tokenizer.json")
+    # print(f"\n加载后特殊Token检查: {new_tok.special_tokens}")
+    # input_text = "Hello world!<|endoftext|>This is padding:<|padding|>"
+    #
+    # print("\n--- 编码测试 ---")
+    # ids = new_tok.encode(input_text)
+    # print(f"原文: {input_text}")
+    # print(f"编码 IDs: {ids}")
+    train_tokenizer()
