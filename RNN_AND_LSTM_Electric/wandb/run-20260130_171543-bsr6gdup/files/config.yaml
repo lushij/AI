@@ -1,0 +1,83 @@
+_wandb:
+    value:
+        cli_version: 0.24.0
+        e:
+            bbijrvsqu830icd6g3me7ivxsfxooi49:
+                codePath: RNN_AND_LSTM_Electric/model.ipynb
+                cpu_count: 8
+                cpu_count_logical: 16
+                cudaVersion: "12.3"
+                disk:
+                    /:
+                        total: "180084535296"
+                        used: "64747360256"
+                email: 766993892@qq.com
+                executable: R:\Program Files\Python312\python.exe
+                git:
+                    commit: 3129980d28b456833dbb15d5e724dea09bf27f0d
+                    remote: https://github.com/lushij/AI.git
+                gpu: NVIDIA GeForce RTX 3050 Ti Laptop GPU
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 2560
+                      memoryTotal: "4294967296"
+                      name: NVIDIA GeForce RTX 3050 Ti Laptop GPU
+                      uuid: GPU-b1126df8-b43a-bf93-04d0-36113fa76b83
+                host: LAPTOP-RJ8D2L7U
+                memory:
+                    total: "16471552000"
+                os: Windows-10-10.0.19045-SP0
+                program: RNN_AND_LSTM_Electric/model.ipynb
+                python: CPython 3.12.3
+                root: D:\AI\RNN_AND_LSTM_Electric
+                startedAt: "2026-01-30T09:15:43.329126Z"
+                writerId: bbijrvsqu830icd6g3me7ivxsfxooi49
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 105
+            "2":
+                - 105
+            "3":
+                - 2
+                - 13
+            "4": 3.12.3
+            "5": 0.24.0
+            "8":
+                - 1
+                - 3
+            "12": 0.24.0
+            "13": windows-amd64
+        visualize:
+            Interactive_Load_Chart:
+                panel_config:
+                    fieldSettings:
+                        stroke: null
+                        x: 数据时间
+                        "y": 总有功功率（kw）
+                    panelDefId: wandb/line/v0
+                    stringSettings:
+                        title: 电力负荷交互式曲线
+                    transform:
+                        name: tableWithLeafColNames
+                    userQuery:
+                        queryFields:
+                            - args:
+                                - name: runSets
+                                  value: ${runSets}
+                              fields:
+                                - fields: []
+                                  name: id
+                                - fields: []
+                                  name: name
+                                - fields: []
+                                  name: _defaultColorIndex
+                                - args:
+                                    - name: tableKey
+                                      value: Interactive_Load_Chart_table
+                                  fields: []
+                                  name: summaryTable
+                              name: runSets
+                panel_type: Vega2

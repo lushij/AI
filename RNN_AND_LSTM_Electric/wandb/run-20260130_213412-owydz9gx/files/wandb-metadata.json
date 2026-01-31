@@ -1,0 +1,40 @@
+{
+  "os":  "Windows-10-10.0.19045-SP0",
+  "python":  "CPython 3.12.3",
+  "startedAt":  "2026-01-30T13:34:12.423941Z",
+  "program":  "D:\\AI\\RNN_AND_LSTM_Electric\\train_model.py",
+  "codePath":  "RNN_AND_LSTM_Electric\\train_model.py",
+  "codePathLocal":  "train_model.py",
+  "git":  {
+    "remote":  "https://github.com/lushij/AI.git",
+    "commit":  "3129980d28b456833dbb15d5e724dea09bf27f0d"
+  },
+  "email":  "766993892@qq.com",
+  "root":  "D:\\AI\\RNN_AND_LSTM_Electric",
+  "host":  "LAPTOP-RJ8D2L7U",
+  "executable":  "R:\\Program Files\\Python312\\python.exe",
+  "cpu_count":  8,
+  "cpu_count_logical":  16,
+  "gpu":  "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "180084535296",
+      "used":  "64702828544"
+    }
+  },
+  "memory":  {
+    "total":  "16471552000"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+      "memoryTotal":  "4294967296",
+      "cudaCores":  2560,
+      "architecture":  "Ampere",
+      "uuid":  "GPU-b1126df8-b43a-bf93-04d0-36113fa76b83"
+    }
+  ],
+  "cudaVersion":  "12.3",
+  "writerId":  "ru139wrq558nnahz7g7p0xbfdlzhkaol"
+}
